@@ -1,23 +1,25 @@
 package cmds
 
 import (
+	"context"
 	"github.com/lmika/gopkgs/cli"
+	"github.com/lmika/rwt/internal"
 	"github.com/spf13/cobra"
-	"os"
-	"os/exec"
 )
 
 func Build() *cobra.Command {
 	command := &cobra.Command{
-		Use: "build",
+		Use:   "build",
 		Short: "Build the web assets",
-		Long: `A tool for dealing with web assets which really should not exist.`,
+		Long:  `A tool for dealing with web assets which really should not exist.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			e := exec.Command("node_modules/.bin/esbuild", "assets/css/main.css", "--bundle", "--outfile=build/assets/css/main.css")
-			e.Stdout = os.Stdout
-			e.Stderr = os.Stderr
-			if err := e.Run(); err != nil {
-				cli.Fatalf("could not execute esbuild: %v", err)
+			rwt, err := internal.New()
+			if err != nil {
+				cli.Fatal(err)
+			}
+
+			if err := rwt.Build(context.Background()); err != nil {
+				cli.Fatal(err)
 			}
 		},
 	}
