@@ -17,7 +17,7 @@ func New(esbuildable ESBuildable) *Service {
 
 func (s *Service) Build(ctx context.Context, cfg *models.Config) error {
 	for target, source := range cfg.Targets {
-		if err := s.esbuildable.Run(ctx, target, "--bundle", "--outfile="+source); err != nil {
+		if err := s.esbuildable.Build(ctx, source, target); err != nil {
 			return err
 		}
 	}
@@ -25,5 +25,5 @@ func (s *Service) Build(ctx context.Context, cfg *models.Config) error {
 }
 
 type ESBuildable interface {
-	Run(ctx context.Context, args ...string) error
+	Build(ctx context.Context, source, target string) error
 }
