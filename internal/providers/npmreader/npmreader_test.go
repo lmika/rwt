@@ -1,17 +1,18 @@
-package projects_test
+package npmreader_test
 
 import (
 	"context"
 	"strings"
 	"testing"
 
-	"github.com/lmika/rwt/projects"
+	"github.com/lmika/rwt/internal/models/projects"
+	"github.com/lmika/rwt/internal/providers/npmreader"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestReadFromPackageJson(t *testing.T) {
 	t.Run("read project from package.json", func(t *testing.T) {
-		proj, err := projects.ReadFromPackageJson(context.Background(), strings.NewReader(samplePackage))
+		proj, err := npmreader.ReadFromPackageJson(context.Background(), strings.NewReader(samplePackage))
 		assert.NoError(t, err)
 
 		assert.Contains(t, proj.Targets, projects.Target{

@@ -1,4 +1,4 @@
-package projects
+package npmreader
 
 import (
 	"context"
@@ -6,11 +6,12 @@ import (
 	"io"
 	"strings"
 
-	"github.com/lmika/rwt/utils/logger"
+	"github.com/lmika/rwt/internal/models/projects"
+	"github.com/lmika/rwt/internal/providers/termout"
 	"github.com/pkg/errors"
 )
 
-func ReadFromPackageJson(ctx context.Context, r io.Reader) (*Project, error) {
+func ReadFromPackageJson(ctx context.Context, r io.Reader) (*projects.Project, error) {
 	var pkg packageJson
 	if err := json.NewDecoder(r).Decode(&pkg); err != nil {
 		return nil, errors.Wrap(err, "cannot unmarshal package.json")
@@ -19,22 +20,22 @@ func ReadFromPackageJson(ctx context.Context, r io.Reader) (*Project, error) {
 	return buildProjectFromPackage(ctx, pkg)
 }
 
-func buildProjectFromPackage(ctx context.Context, pkg packageJson) (*Project, error) {
-	proj := new(Project)
+func buildProjectFromPackage(ctx context.Context, pkg packageJson) (*projects.Project, error) {
+	proj := new(projects.Project)
 
 	for targetFile, srcFile := range pkg.Targets {
 
-		var targetType TargetType
+		var targetType projects.TargetType
 		if strings.HasSuffix(targetFile, ".js") {
-			targetType = JSTargetType
+			targetType = projects.JSTargetType
 		} else if strings.HasSuffix(targetFile, ".css") {
-			targetType = CSSTargetType
+			targetType = projects.CSSTargetType
 		} else {
-			logger.FromContext(ctx).Warnf("unrecognised target type '%v', ignoring", targetFile)
+			termout.FromCtx(ctx).Warnf("unrecognised target type '%v', ignoring", targetFile)
 			continue
 		}
 
-		proj.Targets = append(proj.Targets, Target{
+		proj.Targets = append(proj.Targets, projects.Target{
 			Source: srcFile,
 			Target: targetFile,
 			Type:   targetType,

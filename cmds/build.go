@@ -1,14 +1,9 @@
 package cmds
 
 import (
-	"bytes"
 	"context"
-	"os"
-
 	"github.com/lmika/gopkgs/cli"
-	"github.com/lmika/rwt/projects"
-	"github.com/lmika/rwt/providers/esbuild"
-	"github.com/lmika/rwt/services/builderservice"
+	"github.com/lmika/rwt/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -18,20 +13,13 @@ func Build() *cobra.Command {
 		Short: "Build the web assets",
 		Long:  `A tool for dealing with web assets which really should not exist.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			packageJson, err := os.ReadFile("package.json")
+			rwt, err := internal.New()
 			if err != nil {
-				cli.Fatalf("could not read package.json: %v", err)
+				cli.Fatal(err)
 			}
 
-			ctx := context.Background()
-			project, err := projects.ReadFromPackageJson(ctx, bytes.NewReader(packageJson))
-			if err != nil {
-				cli.Fatalf("could not read project from package.json: %v", err)
-			}
-
-			builderService := builderservice.New(esbuild.New())
-			if err := builderService.Build(ctx, project); err != nil {
-				cli.Fatalf("could not build project: %v", err)
+			if err := rwt.Build(context.Background()); err != nil {
+				cli.Fatal(err)
 			}
 		},
 	}
