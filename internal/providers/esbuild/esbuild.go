@@ -1,10 +1,8 @@
 package esbuild
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 
@@ -22,19 +20,38 @@ func New() *ESBuild {
 
 func (eb *ESBuild) BuildTarget(ctx context.Context, project *projects.Project, target projects.Target) error {
 	args := append(eb.projectBuildArgs(project), target.Source, "--bundle", "--outfile="+target.Target)
-	return eb.run(ctx, args, nil)
+	return eb.run(ctx, args)
 }
 
 func (eb *ESBuild) WatchTarget(ctx context.Context, project *projects.Project, target projects.Target) error {
 	args := append(eb.projectBuildArgs(project), "--watch", target.Source, "--bundle", "--outfile="+target.Target)
-	return eb.run(ctx, args, io.NopCloser(bytes.NewBuffer([]byte{})))
-}
 
-func (eb *ESBuild) run(ctx context.Context, args []string, stdin io.ReadCloser) error {
 	termout.FromCtx(ctx).Verbosef("esbuild %v", args)
 
 	e := exec.Command("node_modules/.bin/esbuild", args...)
-	e.Stdin = stdin
+	e.Stdout = os.Stdout
+	e.Stderr = os.Stderr
+
+	w, err := e.StdinPipe()
+	if err != nil {
+		return errors.Wrap(err, "cound not setup stdin pipe")
+	}
+
+	go func() {
+		<-ctx.Done()
+		w.Close()
+	}()
+
+	if err := e.Run(); err != nil {
+		return errors.Wrap(err, "could not execute esbuild")
+	}
+	return nil
+}
+
+func (eb *ESBuild) run(ctx context.Context, args []string) error {
+	termout.FromCtx(ctx).Verbosef("esbuild %v", args)
+
+	e := exec.Command("node_modules/.bin/esbuild", args...)
 	e.Stdout = os.Stdout
 	e.Stderr = os.Stderr
 	if err := e.Run(); err != nil {
