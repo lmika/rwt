@@ -1,8 +1,10 @@
 package esbuild
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 
@@ -20,18 +22,19 @@ func New() *ESBuild {
 
 func (eb *ESBuild) BuildTarget(ctx context.Context, project *projects.Project, target projects.Target) error {
 	args := append(eb.projectBuildArgs(project), target.Source, "--bundle", "--outfile="+target.Target)
-	return eb.run(ctx, args)
+	return eb.run(ctx, args, nil)
 }
 
 func (eb *ESBuild) WatchTarget(ctx context.Context, project *projects.Project, target projects.Target) error {
 	args := append(eb.projectBuildArgs(project), "--watch", target.Source, "--bundle", "--outfile="+target.Target)
-	return eb.run(ctx, args)
+	return eb.run(ctx, args, io.NopCloser(bytes.NewBuffer([]byte{})))
 }
 
-func (eb *ESBuild) run(ctx context.Context, args []string) error {
+func (eb *ESBuild) run(ctx context.Context, args []string, stdin io.ReadCloser) error {
 	termout.FromCtx(ctx).Verbosef("esbuild %v", args)
 
 	e := exec.Command("node_modules/.bin/esbuild", args...)
+	e.Stdin = stdin
 	e.Stdout = os.Stdout
 	e.Stderr = os.Stderr
 	if err := e.Run(); err != nil {
