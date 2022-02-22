@@ -2,6 +2,7 @@ package esbuild
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -17,15 +18,17 @@ func New() *ESBuild {
 	return &ESBuild{}
 }
 
-func (eb *ESBuild) BuildTarget(ctx context.Context, target projects.Target) error {
-	return eb.run(ctx, target.Source, "--bundle", "--outfile="+target.Target)
+func (eb *ESBuild) BuildTarget(ctx context.Context, project *projects.Project, target projects.Target) error {
+	args := append(eb.projectBuildArgs(project), target.Source, "--bundle", "--outfile="+target.Target)
+	return eb.run(ctx, args)
 }
 
-func (eb *ESBuild) WatchTarget(ctx context.Context, target projects.Target) error {
-	return eb.run(ctx, "--watch", target.Source, "--bundle", "--outfile="+target.Target)
+func (eb *ESBuild) WatchTarget(ctx context.Context, project *projects.Project, target projects.Target) error {
+	args := append(eb.projectBuildArgs(project), "--watch", target.Source, "--bundle", "--outfile="+target.Target)
+	return eb.run(ctx, args)
 }
 
-func (eb *ESBuild) run(ctx context.Context, args ...string) error {
+func (eb *ESBuild) run(ctx context.Context, args []string) error {
 	termout.FromCtx(ctx).Verbosef("esbuild %v", args)
 
 	e := exec.Command("node_modules/.bin/esbuild", args...)
@@ -35,4 +38,15 @@ func (eb *ESBuild) run(ctx context.Context, args ...string) error {
 		return errors.Wrap(err, "could not execute esbuild")
 	}
 	return nil
+}
+
+func (eb *ESBuild) projectBuildArgs(project *projects.Project) []string {
+	projectArgs := make([]string, 0)
+
+	// Add any loaders
+	for _, loader := range project.Loaders {
+		projectArgs = append(projectArgs, fmt.Sprintf("--loader:%v=%v", loader.Pattern, loader.Type))
+	}
+
+	return projectArgs
 }

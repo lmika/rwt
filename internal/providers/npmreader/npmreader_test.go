@@ -25,6 +25,14 @@ func TestReadFromPackageJson(t *testing.T) {
 			Source: "assets/css/main.css",
 			Target: "build/assets/css/main.css",
 		})
+		assert.Contains(t, proj.Loaders, projects.Loader{
+			Type:    projects.FileLoader,
+			Pattern: ".csv",
+		})
+		assert.Contains(t, proj.Loaders, projects.Loader{
+			Type:    projects.FileLoader,
+			Pattern: ".tsv",
+		})
 	})
 }
 
@@ -48,9 +56,14 @@ var samplePackage = `
 	  "jquery": "^3.6.0",
 	  "jquery-ujs": "^1.2.3"
 	},
-	"rwt:targets": {
-	  "build/assets/js/main.js": "assets/js/main.js",
-	  "build/assets/css/main.css": "assets/css/main.css"
+	"rwt:project": {
+	  "targets": {
+	    "build/assets/js/main.js": "assets/js/main.js",
+	    "build/assets/css/main.css": "assets/css/main.css"
+	  },
+	  "loaders": {
+		"file": [".csv", ".tsv"]
+	  }
 	}
   }
 `

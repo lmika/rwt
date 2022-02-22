@@ -21,7 +21,7 @@ func New(esbuildable ESBuildable) *Service {
 func (s *Service) Build(ctx context.Context, cfg *projects.Project) error {
 	for _, target := range cfg.Targets {
 		termout.FromCtx(ctx).Verbosef("building '%v' from '%v' (type %v)", target.Target, target.Source, target.Type)
-		if err := s.esbuildable.BuildTarget(ctx, target); err != nil {
+		if err := s.esbuildable.BuildTarget(ctx, cfg, target); err != nil {
 			return err
 		}
 	}
@@ -38,7 +38,7 @@ func (s *Service) Watch(ctx context.Context, cfg *projects.Project) {
 		go func() {
 			defer waitGroup.Done()
 
-			if err := s.esbuildable.WatchTarget(ctx, target); err != nil {
+			if err := s.esbuildable.WatchTarget(ctx, cfg, target); err != nil {
 				termout.FromCtx(ctx).Verbosef("error: %v")
 			}
 		}()
@@ -49,6 +49,6 @@ func (s *Service) Watch(ctx context.Context, cfg *projects.Project) {
 }
 
 type ESBuildable interface {
-	BuildTarget(ctx context.Context, target projects.Target) error
-	WatchTarget(ctx context.Context, target projects.Target) error
+	BuildTarget(ctx context.Context, project *projects.Project, target projects.Target) error
+	WatchTarget(ctx context.Context, project *projects.Project, target projects.Target) error
 }

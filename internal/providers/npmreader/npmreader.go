@@ -23,8 +23,7 @@ func ReadFromPackageJson(ctx context.Context, r io.Reader) (*projects.Project, e
 func buildProjectFromPackage(ctx context.Context, pkg packageJson) (*projects.Project, error) {
 	proj := new(projects.Project)
 
-	for targetFile, srcFile := range pkg.Targets {
-
+	for targetFile, srcFile := range pkg.Project.Targets {
 		var targetType projects.TargetType
 		if strings.HasSuffix(targetFile, ".js") {
 			targetType = projects.JSTargetType
@@ -42,9 +41,32 @@ func buildProjectFromPackage(ctx context.Context, pkg packageJson) (*projects.Pr
 		})
 	}
 
+	for loader, patterns := range pkg.Project.Loaders {
+		for _, pattern := range patterns {
+			var loaderType projects.LoaderType
+			switch loader {
+			case "file":
+				loaderType = projects.FileLoader
+			default:
+				termout.FromCtx(ctx).Warnf("unrecognised loader type '%v', ignoring", loader)
+				continue
+			}
+
+			proj.Loaders = append(proj.Loaders, projects.Loader{
+				Type:    loaderType,
+				Pattern: pattern,
+			})
+		}
+	}
+
 	return proj, nil
 }
 
 type packageJson struct {
-	Targets map[string]string `json:"rwt:targets"`
+	Project packageProject `json:"rwt:project"`
+}
+
+type packageProject struct {
+	Targets map[string]string   `json:"targets"`
+	Loaders map[string][]string `json:"loaders"`
 }
