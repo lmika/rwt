@@ -11,6 +11,7 @@ const (
 
 const (
 	FileLoader LoaderType = "file"
+	TextLoader            = "text"
 )
 
 type Project struct {

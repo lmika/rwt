@@ -47,6 +47,8 @@ func buildProjectFromPackage(ctx context.Context, pkg packageJson) (*projects.Pr
 			switch loader {
 			case "file":
 				loaderType = projects.FileLoader
+			case "text":
+				loaderType = projects.TextLoader
 			default:
 				termout.FromCtx(ctx).Warnf("unrecognised loader type '%v', ignoring", loader)
 				continue
