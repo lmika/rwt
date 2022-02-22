@@ -42,3 +42,10 @@ func (r *RWT) Build(ctx context.Context) error {
 	ctx = termout.WithCtx(ctx, termout.New())
 	return r.builder.Build(ctx, r.project)
 }
+
+// Watch will start watching for changes of the source assets.  It will continue watching until
+// the context is cancelled.
+func (r *RWT) Watch(ctx context.Context) {
+	ctx = termout.WithCtx(ctx, termout.New())
+	r.builder.Watch(ctx, r.project)
+}

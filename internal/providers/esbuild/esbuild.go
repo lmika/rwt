@@ -21,6 +21,10 @@ func (eb *ESBuild) BuildTarget(ctx context.Context, target projects.Target) erro
 	return eb.run(ctx, target.Source, "--bundle", "--outfile="+target.Target)
 }
 
+func (eb *ESBuild) WatchTarget(ctx context.Context, target projects.Target) error {
+	return eb.run(ctx, "--watch", target.Source, "--bundle", "--outfile="+target.Target)
+}
+
 func (eb *ESBuild) run(ctx context.Context, args ...string) error {
 	termout.FromCtx(ctx).Verbosef("esbuild %v", args)
 

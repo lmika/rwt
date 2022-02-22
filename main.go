@@ -6,12 +6,13 @@ import (
 )
 
 var rootCmt = &cobra.Command{
-	Use: "rwt",
+	Use:   "rwt",
 	Short: "Redundant Web Toolkit",
-	Long: `A tool for dealing with web assets which really should not exist.`,
+	Long:  `A tool for dealing with web assets which really should not exist.`,
 }
 
 func main() {
 	rootCmt.AddCommand(cmds.Build())
+	rootCmt.AddCommand(cmds.Watch())
 	rootCmt.Execute()
 }
