@@ -12,7 +12,7 @@ import (
 
 func Watch() *cobra.Command {
 	command := &cobra.Command{
-		Use:   "build",
+		Use:   "watch",
 		Short: "Start watching for changes",
 		Long:  `Start watching for changes in the web assets and rebuild them when they change.`,
 		Run: func(cmd *cobra.Command, args []string) {
