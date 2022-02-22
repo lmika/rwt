@@ -35,13 +35,13 @@ func (s *Service) Watch(ctx context.Context, cfg *projects.Project) {
 		termout.FromCtx(ctx).Verbosef("watching '%v' from '%v' (type %v)", target.Target, target.Source, target.Type)
 
 		waitGroup.Add(1)
-		go func() {
+		go func(target projects.Target) {
 			defer waitGroup.Done()
 
 			if err := s.esbuildable.WatchTarget(ctx, cfg, target); err != nil {
-				termout.FromCtx(ctx).Verbosef("error: %v")
+				termout.FromCtx(ctx).Verbosef("error: %v", err)
 			}
-		}()
+		}(target)
 	}
 
 	<-ctx.Done()
